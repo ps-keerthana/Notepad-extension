@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Smart Notepad - Note</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 380px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .card {
+      margin: 8px;
+      padding: 12px;
+      background: #f9fbff;
+      border-radius: 18px;
+      box-shadow: 0 0 0 1px rgba(148,163,184,0.18);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4f9cff, #8fd3ff);
+      border-radius: 18px;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #f9fafb;
+    }
+    #closeBtn {
+      border: none;
+      background: rgba(255,255,255,0.95);
+      color: #0f172a;
+      border-radius: 999px;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.25);
+    }
+
+    .origin {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 2px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      color: #2563eb;
+    }
+    .origin:hover { color: #1d4ed8; }
+
+    .timestamp {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+      color: #6b7280;
+    }
+
+    #editArea {
+      width: 100%;
+      height: 190px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #0f172a;
+      padding: 10px 12px;
+      resize: none;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    #editArea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.28);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    #saveBtn {
+      background: #111827;
+      color: #f9fafb;
+      box-shadow: 0 4px 14px rgba(15,23,42,0.35);
+    }
+    #saveBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(15,23,42,0.45);
+    }
+    #deleteBtn {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    #deleteBtn:hover {
+      background: #fecaca;
+    }
+  </style>
+
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h2>📝 Note detail</h2>
+      <button id="closeBtn">✕</button>
+    </div>
+    <div id="origin" class="origin"></div>
+    <div id="timestamp" class="timestamp"></div>
+
+    <textarea id="editArea" spellcheck="false"></textarea>
+
+    <div class="buttons">
+      <button id="saveBtn">Save</button>
+      <button id="deleteBtn">Delete</button>
+    </div>
+  </div>
+
+  <script src="note.js"></script>
+</body>
+
+</html>

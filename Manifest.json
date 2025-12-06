@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Smart Notepad - Quick Ideas Capture",
+  "version": "1.3",
+  "description": "Notes with voice, context, and hashtag filters.",
+  "permissions": ["storage", "tabs", "contextMenus", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Smart Notepad"
+  },
+  "icons": {
+    "16": "icon16.jpg",
+    "48": "icon48.jpg",
+    "128": "icon128.jpg"
+  }
+}

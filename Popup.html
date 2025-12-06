@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title-wrapper">
+        <div class="header-title-main">Smart Notepad</div>
+        <div class="header-title-sub">capture • think • revise</div>
+      </div>
+    </div>
+
+    <div class="header-icons">
+      <button id="timelineBtn" title="Today&apos;s timeline" class="icon-btn icon-square">
+        <span class="icon-glyph">📅</span><span class="icon-label">Today</span>
+      </button>
+      <button id="statsBtn" title="Stats" class="icon-btn icon-square">
+        <span class="icon-glyph">📈</span><span class="icon-label">Stats</span>
+      </button>
+      <button id="voiceBtn" title="Voice input" class="icon-btn icon-square">
+        <span class="icon-glyph">🎤</span><span class="icon-label">Voice</span>
+      </button>
+    </div>
+
+    <textarea id="noteInput" placeholder="Capture your idea instantly..."></textarea>
+    
+    <div class="controls">
+      <button id="saveBtn">Save Note</button>
+      <button id="clearBtn">Clear</button>
+      <button id="mergeBtn">Merge</button>
+    </div>
+
+    <div id="statsPanel" class="stats-panel hidden">
+      <div class="stats-row">
+        <span>Today</span><span id="statToday">0</span>
+      </div>
+      <div class="stats-row">
+        <span>This week</span><span id="statWeek">0</span>
+      </div>
+      <div class="stats-row">
+        <span>Current streak (days)</span><span id="statStreak">0</span>
+      </div>
+      <div class="stats-row">
+        <span>Longest streak</span><span id="statBestStreak">0</span>
+      </div>
+      <div class="stats-row">
+        <span>Total notes</span><span id="statTotal">0</span>
+      </div>
+    </div>
+        
+    <div id="tagsSection" class="tags hidden">
+      <strong>Smart Tags:</strong> <span id="autoTags"></span>
+    </div>
+    <div id="searchContainer" class="search-container">
+      <input id="searchInput" placeholder="🔍 Search all notes..." />
+    </div>
+    
+    <div id="tagFilters" class="tag-filters hidden"></div>
+
+    <div id="notesList" class="notes-list hidden"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

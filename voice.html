@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Smart Notepad Voice Input</title>
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 380px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top left, #e0f2ff 0, #ffffff 55%, #e5e7eb 100%);
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  #wrapper {
+    width: 360px;
+    padding: 14px 14px 12px;
+    border-radius: 22px;
+    background: rgba(249,251,255,0.9);
+    box-shadow:
+      0 22px 50px rgba(15,23,42,0.35),
+      0 0 0 1px rgba(148,163,184,0.22);
+    backdrop-filter: blur(16px);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .header-pill {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #4f9cff, #a5b4fc);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-pill span {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #f9fafb;
+  }
+
+  #status {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+
+  #text {
+    width: 100%;
+    height: 130px;
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #0f172a;
+    resize: none;
+    box-shadow: inset 0 1px 2px rgba(148,163,184,0.4);
+  }
+  #text::placeholder { color: #9ca3af; }
+  #text:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 1px rgba(79,70,229,0.25);
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  button {
+    flex: 1;
+    padding: 9px 0;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  #startBtn {
+    background: #020617;
+    color: #f9fafb;
+    box-shadow: 0 6px 16px rgba(15,23,42,0.5);
+  }
+  #startBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(15,23,42,0.7);
+  }
+
+  #stopBtn {
+    background: #eef2ff;
+    color: #111827;
+    border: 1px solid #c7d2fe;
+  }
+  #stopBtn:hover { background: #e0e7ff; }
+
+  #useBtn {
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+    color: #022c22;
+    box-shadow: 0 6px 16px rgba(22,163,74,0.55);
+  }
+  #useBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 9px 24px rgba(22,163,74,0.65);
+  }
+  </style>
+
+
+</head>
+<body>
+  <div id="wrapper">
+    <div class="header">
+      <div class="header-pill">
+        <span>🎤 Voice input</span>
+      </div>
+    </div>
+    <div id="status">Click “Start” and speak…</div>
+    <textarea id="text" placeholder="Recognized text will appear here"></textarea>
+    <div class="buttons">
+      <button id="startBtn">Start</button>
+      <button id="stopBtn">Stop</button>
+      <button id="useBtn">Use in Notepad</button>
+    </div>
+  </div>
+  <script src="voice.js"></script>
+</body>
+
+</html>
