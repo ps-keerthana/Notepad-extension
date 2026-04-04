@@ -8,15 +8,19 @@
 </head>
 <body>
   <div class="container">
+    <!-- HEADER -->
     <div class="header">
       <div class="header-title-wrapper">
         <div class="header-title-main">Smart Notepad</div>
         <div class="header-title-sub">capture • think • revise</div>
       </div>
+      <!-- Dark mode toggle top-right -->
+      <button id="darkModeBtn" class="dark-toggle" title="Toggle dark mode">🌙</button>
     </div>
 
+    <!-- ICON ROW -->
     <div class="header-icons">
-      <button id="timelineBtn" title="Today&apos;s timeline" class="icon-btn icon-square">
+      <button id="timelineBtn" title="Today's timeline" class="icon-btn icon-square">
         <span class="icon-glyph">📅</span><span class="icon-label">Today</span>
       </button>
       <button id="statsBtn" title="Stats" class="icon-btn icon-square">
@@ -25,16 +29,45 @@
       <button id="voiceBtn" title="Voice input" class="icon-btn icon-square">
         <span class="icon-glyph">🎤</span><span class="icon-label">Voice</span>
       </button>
+      <button id="pomodoroBtn" title="Focus Mode" class="icon-btn icon-square">
+        <span class="icon-glyph">🍅</span><span class="icon-label">Focus</span>
+      </button>
     </div>
 
-    <textarea id="noteInput" placeholder="Capture your idea instantly..."></textarea>
-    
+    <!-- CATEGORY SELECTOR -->
+    <div class="category-row">
+      <select id="categorySelect" class="category-select">
+        <option value="">📁 No category</option>
+        <option value="work">💼 Work</option>
+        <option value="personal">🏠 Personal</option>
+        <option value="research">🔬 Research</option>
+        <option value="ideas">💡 Ideas</option>
+      </select>
+    </div>
+
+    <textarea id="noteInput" placeholder="Capture your idea instantly... (Ctrl+Enter to save)"></textarea>
+
     <div class="controls">
       <button id="saveBtn">Save Note</button>
       <button id="clearBtn">Clear</button>
       <button id="mergeBtn">Merge</button>
     </div>
 
+    <!-- POMODORO PANEL -->
+    <div id="pomodoroPanel" class="pomodoro-panel hidden">
+      <div class="pomo-timer" id="pomoTimer">25:00</div>
+      <div class="pomo-controls">
+        <button id="pomoStart">Start 25m</button>
+        <button id="pomoStop">Stop</button>
+        <button id="pomoSkip">Skip</button>
+      </div>
+      <div class="pomo-stats">
+        <span id="pomoNotes">0 notes</span>
+        <span id="pomoScore">Score: 0%</span>
+      </div>
+    </div>
+
+    <!-- STATS PANEL -->
     <div id="statsPanel" class="stats-panel hidden">
       <div class="stats-row">
         <span>Today</span><span id="statToday">0</span>
@@ -52,18 +85,30 @@
         <span>Total notes</span><span id="statTotal">0</span>
       </div>
     </div>
-        
+
+    <!-- SMART TAGS -->
     <div id="tagsSection" class="tags hidden">
       <strong>Smart Tags:</strong> <span id="autoTags"></span>
     </div>
+
+    <!-- SEARCH -->
     <div id="searchContainer" class="search-container">
       <input id="searchInput" placeholder="🔍 Search all notes..." />
     </div>
-    
+
+    <!-- CATEGORY + TAG FILTERS -->
+    <div id="categoryFilters" class="category-filter-row hidden"></div>
     <div id="tagFilters" class="tag-filters hidden"></div>
 
+    <!-- NOTES LIST -->
     <div id="notesList" class="notes-list hidden"></div>
+
+    <!-- UNDO TOAST -->
+    <div id="undoToast" class="undo-toast hidden">
+      Note deleted. <button id="undoBtn">Undo</button>
+    </div>
   </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
