@@ -706,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return b.id - a.id;
       });
 
-      notes = notes.slice(0, searchQuery ? 30 : 20);
+      // No artificial cap — show all matching notes
       renderedNotes = notes; // keep reference for keyboard nav
 
       // Clamp focused index after reload
