@@ -1,5 +1,3 @@
-// timeline.js
-
 function formatDateKey(d = new Date()) {
   return d.toISOString().slice(0, 10);
 }
@@ -19,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   closeBtn.onclick = () => window.close();
 
-  // ✅ Use local storage
   chrome.storage.local.get(['notes'], (res) => {
     const allNotes = res.notes || [];
     const todayNotes = allNotes.filter(n => {
@@ -28,8 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (!todayNotes.length) {
-      timelineList.textContent = 'No notes for today yet.';
-      summaryEl.textContent    = '';
+      timelineList.innerHTML = '<div class="empty">No notes captured today yet.</div>';
+      summaryEl.textContent = '';
       return;
     }
 
@@ -38,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Group by source domain
     const sessions = new Map();
     todayNotes.forEach(note => {
-      let domain = 'Unknown source';
+      let domain = 'unknown source';
       try { if (note.pageUrl) domain = new URL(note.pageUrl).hostname; } catch (_) {}
       if (!sessions.has(domain)) {
         sessions.set(domain, { title: note.pageTitle || domain, notes: [] });
@@ -55,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const headerEl = document.createElement('div');
       headerEl.className = 'session-header';
-      headerEl.textContent = `${session.title} (${domain})`;
+      headerEl.textContent = session.title + ' · ' + domain;
       groupEl.appendChild(headerEl);
 
       session.notes.forEach(note => {
@@ -69,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const textEl = document.createElement('div');
         textEl.className = 'timeline-text';
-        textEl.textContent = (note.text || '').replace(/\s+/g, ' ').slice(0, 120);
+        textEl.textContent = (note.text || '').replace(/\s+/g, ' ').slice(0, 140);
 
         itemEl.appendChild(timeEl);
         itemEl.appendChild(textEl);
@@ -85,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sc = sessions.size;
     const nc = todayNotes.length;
     summaryEl.textContent =
-      `${sc} session${sc !== 1 ? 's' : ''} · ${nc} note${nc !== 1 ? 's' : ''} · ${completedTasks} task${completedTasks !== 1 ? 's' : ''} completed`;
+      sc + ' session' + (sc !== 1 ? 's' : '') + ' · ' +
+      nc + ' note' + (nc !== 1 ? 's' : '') + ' · ' +
+      completedTasks + ' done';
   });
 });

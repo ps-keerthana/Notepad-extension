@@ -2,102 +2,144 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
+    <div class="pane-top">
+
     <!-- HEADER -->
     <div class="header">
-      <div class="header-title-wrapper">
-        <div class="header-title-main">Smart Notepad</div>
-        <div class="header-title-sub">capture • think • revise</div>
+      <div class="header-left">
+        <div class="header-brand">note<span class="brand-accent">pad_</span></div>
+        <div class="header-sub">capture · think · revise</div>
       </div>
-      <!-- Dark mode toggle top-right -->
-      <button id="darkModeBtn" class="dark-toggle" title="Toggle dark mode">🌙</button>
+      <div class="header-right">
+        <div class="mode-pills">
+          <button id="catAllBtn"   class="mode-pill active">All</button>
+          <button id="catWorkBtn"  class="mode-pill" data-cat="work">Work</button>
+          <button id="catIdeasBtn" class="mode-pill" data-cat="ideas">Ideas</button>
+        </div>
+        <button id="darkModeBtn" class="dark-toggle" title="Toggle theme">☀️</button>
+      </div>
     </div>
 
-    <!-- ICON ROW -->
-    <div class="header-icons">
-      <button id="timelineBtn" title="Today's timeline" class="icon-btn icon-square">
-        <span class="icon-glyph">📅</span><span class="icon-label">Today</span>
+    <!-- ACTION ROW — SVG icons, no emoji -->
+    <div class="action-row">
+      <button id="timelineBtn" class="act-btn" title="Today's timeline">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 2v4M13 2v4M3 8h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="10" cy="12" r="1" fill="currentColor"/><circle cx="13" cy="12" r="1" fill="currentColor"/></svg>
+        <span>Today</span>
       </button>
-      <button id="statsBtn" title="Stats" class="icon-btn icon-square">
-        <span class="icon-glyph">📈</span><span class="icon-label">Stats</span>
+      <button id="statsBtn" class="act-btn" title="Stats">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 14l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="7" r="1.5" fill="currentColor"/></svg>
+        <span>Stats</span>
       </button>
-      <button id="voiceBtn" title="Voice input" class="icon-btn icon-square">
-        <span class="icon-glyph">🎤</span><span class="icon-label">Voice</span>
+      <button id="voiceBtn" class="act-btn" title="Voice input">
+        <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="9" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M4 10a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="10" y1="16" x2="10" y2="18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="7" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>Voice</span>
       </button>
-      <button id="pomodoroBtn" title="Focus Mode" class="icon-btn icon-square">
-        <span class="icon-glyph">🍅</span><span class="icon-label">Focus</span>
+      <button id="remindBtn" class="act-btn" title="Set reminder">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 17a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>Remind</span>
       </button>
     </div>
 
-    <!-- CATEGORY SELECTOR -->
-    <div class="category-row">
+    <!-- INPUT + SIDE BUTTONS ROW -->
+    <div class="input-row">
+
+    <!-- INPUT WRAP -->
+    <div class="input-wrap">
       <select id="categorySelect" class="category-select">
-        <option value="">📁 No category</option>
+        <option value="">No category</option>
         <option value="work">💼 Work</option>
         <option value="personal">🏠 Personal</option>
         <option value="research">🔬 Research</option>
         <option value="ideas">💡 Ideas</option>
       </select>
+      <div class="fmt-toolbar" id="fmtToolbar">
+        <button class="fmt-btn" data-fmt="bold"   title="Bold (**text**)"><b>B</b></button>
+        <button class="fmt-btn" data-fmt="italic" title="Italic (*text*)"><i>I</i></button>
+        <button class="fmt-btn" data-fmt="code"   title="Inline code (`text`)" style="font-size:10px">&#96;&#96;</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" data-fmt="olist"  title="Numbered list (1. 2. 3.)" style="font-size:10px">1.</button>
+        <button class="fmt-btn" data-fmt="task"   title="Task checkbox (- [ ] text)" style="font-size:11px">☑</button>
+        <button class="fmt-btn" data-fmt="bullet" title="Bullet point (- text)" style="font-size:15px">•</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" data-fmt="h1"     title="Heading 1 (# text)" style="font-size:10px">H1</button>
+        <button class="fmt-btn" data-fmt="h2"     title="Heading 2 (## text)" style="font-size:10px">H2</button>
+        <button class="fmt-btn" data-fmt="strike" title="Strikethrough (~~text~~)" style="text-decoration:line-through">S</button>
+      </div>
+      <textarea id="noteInput" placeholder="Capture a thought... (Ctrl+Enter to save)"></textarea>
+      <div id="tagsSection" class="tags hidden">
+        <span id="autoTags"></span>
+      </div>
+    </div><!-- /input-wrap -->
+
+    <!-- SIDE CONTROLS -->
+    <div class="side-controls">
+      <button id="saveBtn"  class="btn-save">Save_</button>
+      <button id="clearBtn" class="btn-ghost">Clear</button>
+      <button id="mergeBtn" class="btn-ghost btn-merge" title="Select 2+ notes then click to merge">
+        Merge <span id="mergeBadge" class="merge-badge hidden">0</span>
+      </button>
     </div>
 
-    <textarea id="noteInput" placeholder="Capture your idea instantly... (Ctrl+Enter to save)"></textarea>
+    </div><!-- /input-row -->
 
-    <div class="controls">
-      <button id="saveBtn">Save Note</button>
-      <button id="clearBtn">Clear</button>
-      <button id="mergeBtn">Merge</button>
+    <!-- MERGE PREVIEW BAR — shown when notes are selected -->
+    <div id="mergeBar" class="merge-bar hidden">
+      <span id="mergeBarLabel" class="merge-bar-label">0 selected</span>
+      <div class="merge-bar-actions">
+        <button id="mergeConfirmBtn" class="merge-bar-btn primary">⟳ Merge into one</button>
+        <button id="mergeClearBtn"   class="merge-bar-btn ghost">✕ Clear</button>
+      </div>
     </div>
 
-    <!-- POMODORO PANEL -->
-    <div id="pomodoroPanel" class="pomodoro-panel hidden">
-      <div class="pomo-timer" id="pomoTimer">25:00</div>
-      <div class="pomo-controls">
-        <button id="pomoStart">Start 25m</button>
-        <button id="pomoStop">Stop</button>
-        <button id="pomoSkip">Skip</button>
+    <!-- REMINDER PANEL -->
+    <div id="remindPanel" class="remind-panel hidden">
+      <div class="remind-header">
+        <span class="remind-title">Set reminder</span>
+        <button id="remindCloseBtn" class="remind-close">✕</button>
       </div>
-      <div class="pomo-stats">
-        <span id="pomoNotes">0 notes</span>
-        <span id="pomoScore">Score: 0%</span>
+      <div class="remind-body">
+        <select id="remindNoteSelect" class="remind-select"></select>
+        <div class="remind-time-row">
+          <input type="datetime-local" id="remindTime" class="remind-time-input" />
+        </div>
+        <button id="remindSaveBtn" class="remind-save-btn">Set reminder</button>
       </div>
+      <div id="remindList" class="remind-list"></div>
     </div>
 
     <!-- STATS PANEL -->
     <div id="statsPanel" class="stats-panel hidden">
-      <div class="stats-row">
-        <span>Today</span><span id="statToday">0</span>
-      </div>
-      <div class="stats-row">
-        <span>This week</span><span id="statWeek">0</span>
-      </div>
-      <div class="stats-row">
-        <span>Current streak (days)</span><span id="statStreak">0</span>
-      </div>
-      <div class="stats-row">
-        <span>Longest streak</span><span id="statBestStreak">0</span>
-      </div>
-      <div class="stats-row">
-        <span>Total notes</span><span id="statTotal">0</span>
-      </div>
+      <div class="stats-row"><span>Today</span><span id="statToday">0</span></div>
+      <div class="stats-row"><span>This week</span><span id="statWeek">0</span></div>
+      <div class="stats-row"><span>Current streak</span><span id="statStreak">0</span></div>
+      <div class="stats-row"><span>Best streak</span><span id="statBestStreak">0</span></div>
+      <div class="stats-row"><span>Total notes</span><span id="statTotal">0</span></div>
     </div>
 
-    <!-- SMART TAGS -->
-    <div id="tagsSection" class="tags hidden">
-      <strong>Smart Tags:</strong> <span id="autoTags"></span>
+    </div><!-- end pane-top -->
+
+    <!-- RESIZER -->
+    <div id="resizer" class="resizer" title="Drag to resize">
+      <div class="resizer-handle"></div>
     </div>
 
-    <!-- SEARCH -->
-    <div id="searchContainer" class="search-container">
-      <input id="searchInput" placeholder="🔍 Search all notes..." />
+    <div class="pane-bottom">
+    <!-- SEARCH + NAV HINT -->
+    <div class="search-container">
+      <input id="searchInput" placeholder="/ search notes..." />
+      <div class="nav-hint" id="navHint">↑↓ navigate · Enter open · Del delete</div>
     </div>
 
-    <!-- CATEGORY + TAG FILTERS -->
-    <div id="categoryFilters" class="category-filter-row hidden"></div>
+    <!-- CATEGORY FILTER PILLS -->
+    <div id="categoryFilters" class="cat-filter-row hidden"></div>
+
+    <!-- TAG FILTER PILLS -->
     <div id="tagFilters" class="tag-filters hidden"></div>
 
     <!-- NOTES LIST -->
@@ -107,8 +149,10 @@
     <div id="undoToast" class="undo-toast hidden">
       Note deleted. <button id="undoBtn">Undo</button>
     </div>
-  </div>
 
+    </div><!-- end pane-bottom -->
+
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

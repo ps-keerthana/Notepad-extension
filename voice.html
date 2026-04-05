@@ -1,137 +1,211 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+    (function() {
+      var p = new URLSearchParams(location.search);
+      if (p.get('theme') === 'light') document.documentElement.classList.add('light-mode');
+    })();
+  </script>
   <meta charset="utf-8">
-  <title>Smart Notepad Voice Input</title>
+  <title>Smart Notepad — Voice</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap">
   <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    width: 380px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: radial-gradient(circle at top left, #e0f2ff 0, #ffffff 55%, #e5e7eb 100%);
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
+    /* DARK (default) */
+    html, body {
+      width: 420px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0D0D14;
+      color: #E8E6FF;
+    }
 
-  #wrapper {
-    width: 360px;
-    padding: 14px 14px 12px;
-    border-radius: 22px;
-    background: rgba(249,251,255,0.9);
-    box-shadow:
-      0 22px 50px rgba(15,23,42,0.35),
-      0 0 0 1px rgba(148,163,184,0.22);
-    backdrop-filter: blur(16px);
-  }
+    /* LIGHT */
+    html.light-mode,
+    html.light-mode body {
+      background: #F5F0E8;
+      color: #1A1A1A;
+    }
 
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .header-pill {
-    flex: 1;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #4f9cff, #a5b4fc);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .header-pill span {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #f9fafb;
-  }
+    /* ── Header ── */
+    .header {
+      background: #0D0D14;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    html.light-mode .header {
+      background: #1A1A1A;
+      border-bottom-color: #333;
+    }
 
-  #status {
-    font-size: 12px;
-    opacity: 0.85;
-    margin-bottom: 8px;
-  }
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    html.light-mode .brand {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .brand span { color: #7864FF; }
+    html.light-mode .brand span { color: #C8B97A; }
 
-  #text {
-    width: 100%;
-    height: 130px;
-    background: #ffffff;
-    border-radius: 18px;
-    border: 1px solid #e5e7eb;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: #0f172a;
-    resize: none;
-    box-shadow: inset 0 1px 2px rgba(148,163,184,0.4);
-  }
-  #text::placeholder { color: #9ca3af; }
-  #text:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 1px rgba(79,70,229,0.25);
-  }
+    .header-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(200,196,232,0.45);
+    }
+    html.light-mode .header-label { color: rgba(245,240,232,0.6); }
 
-  .buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-  }
+    /* ── Body ── */
+    .body { padding: 16px; }
 
-  button {
-    flex: 1;
-    padding: 9px 0;
-    border: none;
-    border-radius: 999px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 13px;
-    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
-  }
+    /* status */
+    #status {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(200,196,232,0.45);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    html.light-mode #status { color: #8A7F70; }
 
-  #startBtn {
-    background: #020617;
-    color: #f9fafb;
-    box-shadow: 0 6px 16px rgba(15,23,42,0.5);
-  }
-  #startBtn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 22px rgba(15,23,42,0.7);
-  }
+    #status::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(200,196,232,0.25);
+      flex-shrink: 0;
+    }
+    #status.listening::before {
+      background: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.25);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    #status.done::before { background: #10b981; }
 
-  #stopBtn {
-    background: #eef2ff;
-    color: #111827;
-    border: 1px solid #c7d2fe;
-  }
-  #stopBtn:hover { background: #e0e7ff; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
 
-  #useBtn {
-    background: linear-gradient(135deg, #22c55e, #4ade80);
-    color: #022c22;
-    box-shadow: 0 6px 16px rgba(22,163,74,0.55);
-  }
-  #useBtn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 9px 24px rgba(22,163,74,0.65);
-  }
+    /* textarea */
+    #text {
+      width: 100%;
+      height: 130px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: #E8E6FF;
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      line-height: 1.6;
+    }
+    #text::placeholder { color: rgba(232,230,255,0.22); }
+    #text:focus {
+      border-color: rgba(120,100,255,0.45);
+      box-shadow: 0 0 0 1px rgba(120,100,255,0.2);
+    }
+
+    html.light-mode #text {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #C8B97A;
+      border-radius: 0;
+      color: #1A1A1A;
+      box-shadow: none;
+    }
+    html.light-mode #text::placeholder { color: #A89F90; }
+    html.light-mode #text:focus {
+      border-bottom-color: #1A1A1A;
+      box-shadow: none;
+    }
+
+    /* buttons */
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 6px;
+      border: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    #startBtn {
+      background: #7864FF;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(120,100,255,0.4);
+    }
+    html.light-mode #startBtn {
+      background: #1A1A1A;
+      color: #F5F0E8;
+      box-shadow: 0 4px 12px rgba(26,26,26,0.3);
+    }
+
+    #stopBtn {
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    html.light-mode #stopBtn {
+      background: rgba(200,60,60,0.08);
+      color: #b91c1c;
+      border-color: rgba(200,60,60,0.25);
+    }
+
+    #useBtn {
+      background: rgba(16,185,129,0.15);
+      color: #34d399;
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    html.light-mode #useBtn {
+      background: rgba(16,120,60,0.1);
+      color: #166534;
+      border-color: rgba(16,120,60,0.25);
+    }
   </style>
-
-
 </head>
 <body>
-  <div id="wrapper">
-    <div class="header">
-      <div class="header-pill">
-        <span>🎤 Voice input</span>
-      </div>
-    </div>
-    <div id="status">Click “Start” and speak…</div>
-    <textarea id="text" placeholder="Recognized text will appear here"></textarea>
+  <div class="header">
+    <div class="brand">note<span>pad_</span></div>
+    <div class="header-label">🎤 voice input</div>
+  </div>
+  <div class="body">
+    <div id="status">Click start and speak...</div>
+    <textarea id="text" placeholder="Recognized text will appear here..."></textarea>
     <div class="buttons">
       <button id="startBtn">Start</button>
       <button id="stopBtn">Stop</button>
@@ -140,5 +214,4 @@
   </div>
   <script src="voice.js"></script>
 </body>
-
 </html>
