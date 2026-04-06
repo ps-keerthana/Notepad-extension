@@ -76,6 +76,13 @@ let stats = { today: 0, week: 0, streak: 0, bestStreak: 0, total: 0 };
 // Reminder panel state
 let remindPanelOpen = false;
 
+// Active color label for new note being composed
+let activeNoteColor = '';
+
+// Custom note order (drag-to-reorder)
+// Stored as array of note IDs in their display order
+let customOrder = [];
+
 // Undo
 let undoBuffer  = null;
 let undoTimeout = null;
@@ -115,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const remindList      = document.getElementById('remindList');
   const undoToast       = document.getElementById('undoToast');
   const undoBtn         = document.getElementById('undoBtn');
+  const templateRow     = document.getElementById('fmtToolbar');
+  const colorRow        = document.getElementById('fmtToolbar');
+  const activeColorLabel = null; // removed from UI, now inline in toolbar
   const mergeBar        = document.getElementById('mergeBar');
   const mergeBarLabel   = document.getElementById('mergeBarLabel');
   const mergeConfirmBtn = document.getElementById('mergeConfirmBtn');
@@ -154,7 +164,11 @@ document.addEventListener('DOMContentLoaded', function () {
       generateSmartTags();
       sendResponse({ ok: true });
     } else if (msg.type === 'NOTE_UPDATED' || msg.type === 'NOTE_DELETED' || msg.type === 'NOTE_SAVED') {
-      loadNotes();
+      // Load custom drag order then render
+  chrome.storage.local.get(['customOrder'], (res) => {
+    customOrder = res.customOrder || [];
+    loadNotes();
+  });
       sendResponse({ ok: true });
     }
   });
@@ -194,6 +208,99 @@ document.addEventListener('DOMContentLoaded', function () {
       loadNotes();
     };
   }
+
+  // ── TEMPLATES ───────────────────────────────────────────────────────────
+  const BUILT_IN_TEMPLATES = {
+    meeting: `## Meeting notes
+**Date:** ${new Date().toLocaleDateString()}
+**Attendees:**
+
+### Agenda
+- 
+
+### Action items
+- [ ] 
+
+### Notes
+`,
+    bug:     `## Bug report
+**Title:**
+**Severity:** Low / Medium / High
+**Steps to reproduce:**
+1. 
+2. 
+
+**Expected:** 
+**Actual:** 
+**Environment:** 
+`,
+    standup: `## Daily standup — ${new Date().toLocaleDateString()}
+**Yesterday:**
+- 
+
+**Today:**
+- 
+
+**Blockers:**
+- none
+`,
+    research:`## Research snippet
+**Topic:**
+**Source:**
+**Key finding:**
+
+**Why it matters:**
+
+#research
+`,
+    todo:    `## To-do list
+- [ ] 
+- [ ] 
+- [ ] 
+
+#task
+`,
+  };
+
+  templateRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tpl-btn');
+    if (!btn) return;
+    const key = btn.dataset.tpl;
+    // Try custom templates first, then built-in
+    chrome.storage.local.get(['customTemplates'], (res) => {
+      const custom = res.customTemplates || {};
+      const tpl = custom[key] || BUILT_IN_TEMPLATES[key];
+      if (!tpl) return;
+      noteInput.value = tpl;
+      noteInput.focus();
+      // put cursor at end
+      noteInput.setSelectionRange(tpl.length, tpl.length);
+      generateSmartTags();
+    });
+  });
+
+  // ── COLOR LABELS ─────────────────────────────────────────────────────────
+  colorRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.color-swatch');
+    if (!btn) return;
+    activeNoteColor = btn.dataset.color;
+    colorRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('swatch-active'));
+    btn.classList.add('swatch-active');
+  });
+
+  // ── STORAGE QUOTA GUARD ──────────────────────────────────────────────────
+  function checkStorageQuota() {
+    chrome.storage.local.getBytesInUse(null, (bytesUsed) => {
+      const MB = bytesUsed / (1024 * 1024);
+      if (MB >= 9) {
+        showToast(`⚠ Storage ${MB.toFixed(1)}MB / 10MB — delete old notes`);
+      } else if (MB >= 7.5) {
+        showToast(`Storage ${MB.toFixed(1)}MB used of 10MB`);
+      }
+    });
+  }
+  // Check on load and after every save
+  checkStorageQuota();
 
   saveBtn.onclick   = saveNote;
   clearBtn.onclick  = () => { noteInput.value = ''; tagsSection.classList.add('hidden'); };
@@ -588,6 +695,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tags: autoTags.textContent || '',
         category: categorySelect.value || '',
         pinned: false,
+        colorLabel: activeNoteColor || '',    // ← color swatch
         timestamp: new Date().toLocaleString(),
         createdDate: formatDateKey(),
         pageTitle: tab.title || 'Untitled page',
@@ -603,6 +711,10 @@ document.addEventListener('DOMContentLoaded', function () {
           tagsSection.classList.add('hidden');
           categorySelect.value = '';
           focusedNoteIndex = -1;
+          // Reset color swatch
+          activeNoteColor = '';
+          colorRow.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('swatch-active'));
+          checkStorageQuota();
           loadNotes();
 
         });
@@ -626,10 +738,29 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Build category filter pills ───────────────────────────────────────────
 
   function buildCategoryFilters(notes) {
+    // Category pills are now rendered inside buildTagFilters, nothing to do here
+  }
+
+  // ── Build tag filter pills (includes category pills in same row) ──────────
+
+  function buildTagFilters(notes) {
     const usedCats = new Set(notes.map(n => n.category).filter(Boolean));
-    if (!usedCats.size) { categoryFilters.innerHTML = ''; categoryFilters.classList.add('hidden'); return; }
-    categoryFilters.classList.remove('hidden');
-    categoryFilters.innerHTML = '';
+    const tagSet = new Set();
+    notes.forEach(note => { (note.text || '').match(/#\w+/g)?.forEach(tag => tagSet.add(tag)); });
+    const tags = Array.from(tagSet).sort();
+
+    const hasAnything = usedCats.size || tags.length;
+    if (!hasAnything) {
+      tagFilters.innerHTML = ''; tagFilters.classList.add('hidden');
+      categoryFilters.innerHTML = ''; categoryFilters.classList.add('hidden');
+      return;
+    }
+
+    tagFilters.classList.remove('hidden');
+    tagFilters.innerHTML = '';
+    categoryFilters.innerHTML = ''; categoryFilters.classList.add('hidden'); // keep hidden, unused now
+
+    // Category pills first
     usedCats.forEach(cat => {
       const meta = CATEGORIES[cat];
       if (!meta) return;
@@ -637,19 +768,10 @@ document.addEventListener('DOMContentLoaded', function () {
       pill.className = 'cat-pill' + (currentCategoryFilter === cat ? ' active' : '');
       pill.textContent = meta.label;
       pill.onclick = () => { currentCategoryFilter = currentCategoryFilter === cat ? null : cat; focusedNoteIndex = -1; loadNotes(); };
-      categoryFilters.appendChild(pill);
+      tagFilters.appendChild(pill);
     });
-  }
 
-  // ── Build tag filter pills ────────────────────────────────────────────────
-
-  function buildTagFilters(notes) {
-    const tagSet = new Set();
-    notes.forEach(note => { (note.text || '').match(/#\w+/g)?.forEach(tag => tagSet.add(tag)); });
-    const tags = Array.from(tagSet).sort();
-    if (!tags.length) { tagFilters.innerHTML = ''; tagFilters.classList.add('hidden'); return; }
-    tagFilters.classList.remove('hidden');
-    tagFilters.innerHTML = '';
+    // Tag pills after
     tags.forEach(tag => {
       const pill = document.createElement('div');
       pill.className = 'tag-pill' + (currentTagFilter === tag ? ' active' : '');
@@ -690,9 +812,16 @@ document.addEventListener('DOMContentLoaded', function () {
         );
       }
 
+      // Sort: pinned first, then custom drag order, then newest first
       notes = [...notes].sort((a, b) => {
         if (a.pinned && !b.pinned) return -1;
-        if (!a.pinned && b.pinned) return 1;
+        if (!a.pinned && b.pinned)  return 1;
+        // custom order (drag-to-reorder)
+        const oa = customOrder.indexOf(a.id);
+        const ob = customOrder.indexOf(b.id);
+        if (oa !== -1 && ob !== -1) return oa - ob;
+        if (oa !== -1) return -1;
+        if (ob !== -1) return  1;
         return b.id - a.id;
       });
 
@@ -710,7 +839,8 @@ document.addEventListener('DOMContentLoaded', function () {
           (selectedNoteIds.has(note.id) ? ' selected' : '') +
           (note.pinned ? ' pinned' : '') +
           (isFocused ? ' kb-focused' : '') +
-          (note.highlighted ? ' highlighted' : '');
+          (note.highlighted ? ' highlighted' : '') +
+          (note.colorLabel ? ` color-${note.colorLabel}` : '');
 
         // ── TAB GROUP COLOR: apply to card if note has a group color ──────────
         if (note.tabGroupColor && TAB_GROUP_COLORS[note.tabGroupColor]) {
@@ -742,6 +872,34 @@ document.addEventListener('DOMContentLoaded', function () {
           e.stopPropagation();
           openNoteDetail(note);
         };
+
+        // ── DRAG TO REORDER ───────────────────────────────────────────────
+        item.draggable = true;
+        item.dataset.noteId = note.id;
+
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', note.id);
+          item.classList.add('dragging');
+        });
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+          notesList.querySelectorAll('.note-item').forEach(el => el.classList.remove('drag-over'));
+        });
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          notesList.querySelectorAll('.note-item').forEach(el => el.classList.remove('drag-over'));
+          item.classList.add('drag-over');
+        });
+        item.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const fromId = Number(e.dataTransfer.getData('text/plain'));
+          const toId   = note.id;
+          if (fromId === toId) return;
+          persistReorder(fromId, toId);
+        });
 
         // Category badge
         if (note.category && CATEGORIES[note.category]) {
@@ -896,6 +1054,32 @@ document.addEventListener('DOMContentLoaded', function () {
       undoToast.innerHTML = prev;
       undoToast.classList.add('hidden');
     }, 1800);
+  }
+
+  // ── Drag reorder: persist new order ─────────────────────────────────────
+
+  function persistReorder(fromId, toId) {
+    chrome.storage.local.get(['notes', 'customOrder'], (res) => {
+      const allNotes = res.notes || [];
+      // Build order array from current rendered order if empty
+      let order = res.customOrder && res.customOrder.length
+        ? [...res.customOrder]
+        : allNotes.map(n => n.id);
+
+      // Ensure all current note IDs are in the order array
+      allNotes.forEach(n => { if (!order.includes(n.id)) order.push(n.id); });
+
+      const fromIdx = order.indexOf(fromId);
+      const toIdx   = order.indexOf(toId);
+      if (fromIdx === -1 || toIdx === -1) return;
+
+      // Move fromId to toId's position
+      order.splice(fromIdx, 1);
+      order.splice(toIdx, 0, fromId);
+      customOrder = order;
+
+      chrome.storage.local.set({ customOrder: order }, loadNotes);
+    });
   }
 
   // ── Pin toggle ────────────────────────────────────────────────────────────
