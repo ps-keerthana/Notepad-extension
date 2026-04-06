@@ -50,7 +50,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   chrome.storage.local.get(['notes'], (result) => {
     const notes = result.notes || [];
     notes.unshift(note);
-    chrome.storage.local.set({ notes });
+    chrome.storage.local.set({ notes }, () => {
+      // Notify popup if it's open so it reloads instantly
+      chrome.runtime.sendMessage({ type: 'NOTE_SAVED' }).catch(() => {});
+    });
   });
 });
 
