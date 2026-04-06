@@ -1,10 +1,10 @@
-# 📝 Smart Notepad — Chrome Extension
+# SMART NOTEPAD — Chrome Extension
 
 > A fast, keyboard-driven sidebar notepad with voice input, reminders, hashtag filtering, categories, colour labels, templates, drag-to-reorder, and a polished dark/light theme — all living inside Chrome's native side panel.
 
----
 
-## 📦 Installation
+
+## Installation
 
 1. **Unzip** this folder to a permanent location on your computer.
 2. Open Chrome and go to `chrome://extensions/`
@@ -12,11 +12,10 @@
 4. Click **Load unpacked** and select the unzipped folder.
 5. The Smart Notepad icon appears in your toolbar. Click it to open the sidebar.
 
-> Icons must be `.png` — the included `icon16.png`, `icon48.png`, `icon128.png` are already correct.
 
----
 
-## ⌨️ Keyboard Shortcuts
+
+## ⌨ Keyboard Shortcuts
 
 | Shortcut | Action |
 |---|---|
@@ -28,16 +27,16 @@
 | `P` (note focused) | Pin / unpin focused note |
 | `Escape` | Exit note focus, return to textarea |
 
----
 
-## ✨ Features
 
-### 1. 📝 Saving a Note
+## Features
+
+### 1. Saving a Note
 Type in the textarea → **Save_** button or `Ctrl+Enter`. The note captures the current page title and URL automatically.
 
----
 
-### 2. 📋 Templates
+
+### 2. Templates
 Five built-in note scaffolds appear above the textarea:
 
 | Template | Pre-fills |
@@ -50,18 +49,18 @@ Five built-in note scaffolds appear above the textarea:
 
 Click any template button to pre-fill the textarea instantly. Custom templates can be stored in `chrome.storage.local` under the key `customTemplates` as a plain object (`{ key: "template text" }`).
 
----
 
-### 3. 🎨 Colour Labels
+
+### 3. Colour Labels
 Five accent swatches appear below the template row:
 
 **Rose · Amber · Teal · Violet · Sky**
 
 Pick a colour before saving. The note card gets a matching tinted border and background — much faster to scan visually than categories alone. Works in both dark and light mode. Select the ✕ swatch (left) to save with no colour.
 
----
 
-### 4. 📁 Categories
+
+### 4. Categories
 Category dropdown above the textarea:
 
 | Category | Keyboard shortcut |
@@ -73,104 +72,103 @@ Category dropdown above the textarea:
 
 Category filter pills appear automatically below the search bar once notes with categories exist.
 
----
 
-### 5. 📌 Pinning Notes
+
+### 5. Pinning Notes
 Hover any note card and click **↑** to pin. Pinned notes always sort to the top above all filters. Gold border in light mode, purple glow in dark mode. Press `P` on a keyboard-focused note to toggle pin.
 
----
+
 
 ### 6. 🔀 Drag-to-Reorder
 Drag any note card up or down to reorder. The custom order persists in `chrome.storage.local` under `customOrder`. Pinned notes always stay on top regardless of drag order. Drag order is preserved across reopens.
 
----
 
-### 7. 🔍 Search
+
+### 7. Search
 The `/ search notes...` bar filters by note text, page title, and tags in real time across all notes (not just visible ones).
 
----
 
-### 8. 🔖 Hashtags & Tag Filtering
+
+### 8. Hashtags & Tag Filtering
 Type `#tagname` anywhere in a note to tag it. Coloured tag pills appear below the search bar — click to filter. Tags are colour-coded consistently (same tag always same colour).
 
----
 
-### 9. ✅ Checklists
+
+### 9. Checklists
 Use `- [ ] item` syntax. Rendered notes show interactive checkboxes. Checking/unchecking persists immediately.
 
----
 
-### 10. ✍️ Markdown Formatting Toolbar
+
+### 10. Markdown Formatting Toolbar
 Buttons: **B** (bold), *I* (italic), `` ` `` (inline code), `1.` (numbered list), ☑ (task), • (bullet), H1, H2, S (strikethrough). Also available in the Note Detail panel.
 
----
 
-### 11. 🔀 Merge Notes
+
+### 11. Merge Notes
 Single-click notes to select them (purple highlight). When 2+ are selected, a **merge bar** slides in showing the count and a "Merge into one" button. The merged note gets a bold source-title header per section, unioned tags, and majority-voted category.
 
----
+
 
 ### 12. ⧉ Copy Note
 Hover any note and click **⧉** to copy the plain text to clipboard (markdown stripped). A toast confirms.
 
----
+
 
 ### 13. ◑ Highlight Clipped Notes
 Clip notes (saved via right-click → Save selection) show a **◑** button. Click to apply a yellow highlight wash — useful for marking clips to revisit.
 
----
+
 
 ### 14. 🗑️ Undo Delete
 Delete a note → a toast appears for 5 seconds with an **Undo** button. Click to restore.
 
----
 
-### 15. 🎤 Voice Input
+
+### 15. Voice Input
 Click **Voice** in the action row. The voice panel slides in (no separate window). Click **Start** and speak — text appears in real time. Click **Use in notepad** to transfer the recognized text to the main textarea.
 
----
 
-### 16. 📅 Today's Timeline
+### 16. Today's Timeline
 Click **Today**. The timeline panel slides in showing all notes from today grouped by source domain, with timestamps. Summary bar shows sessions · notes · tasks completed.
 
----
 
-### 17. 🔔 Reminders
+
+### 17. Reminders
 Click **Remind**. Pick a note from the dropdown, set a date/time (defaults to +1 hour rounded to nearest 5 min), click **Set reminder**. Chrome fires a **silent** OS notification at that time — even when the sidebar is closed or Chrome is minimized. Reminders survive browser restarts. Delete upcoming reminders from the list inside the panel.
 
----
 
-### 18. 📈 Stats
+
+### 18. Stats
 Click **Stats** to expand: Today / This week / Current streak / Best streak / Total notes.
 
----
+
 
 ### 19. 🌙 Dark / Light Mode
 Click the moon/sun icon in the header. Default is Dark (Deep Space). Light mode uses the Ink & Paper theme (cream background, monospace fonts, gold accents).
 
----
 
-### 20. 🖱️ Right-Click to Clip
+
+### 20. Right-Click to Clip
 Select any text on any webpage → right-click → **Save selection to Smart Notepad**. Saved as an italic note tagged `#clip`.
 
----
 
-### 21. 🗂️ Tab Group Awareness
+
+### 21. Tab Group Awareness
 Notes remember the Chrome tab group colour of the tab they were saved from. A coloured left bar appears on the card matching the group colour.
 
----
 
-### 22. ⚠️ Storage Quota Guard
+
+### 22. Storage Quota Guard
 `chrome.storage.local` has a 10MB limit. The extension checks usage on load and after every save. A warning toast appears at 7.5MB ("approaching limit") and a red warning at 9MB. This prevents silent save failures.
 
----
 
-### 23. ⌨️ Keyboard Navigation
+
+### 23. ⌨ Keyboard Navigation
 Press `↓` anywhere to enter note navigation mode. A glow ring highlights the focused note. `↑↓` to move, `Enter` to open, `Delete` to remove, `P` to pin, `Escape` to exit back to textarea. A hint bar fades in to show shortcuts.
 
----
 
-## 🗂️ File Overview
+
+## File Overview
 
 | File | Purpose |
 |---|---|
@@ -181,11 +179,8 @@ Press `↓` anywhere to enter note navigation mode. A glow ring highlights the f
 | `background.js` | Service worker — alarms, notifications, context menu |
 | `icon16/48/128.png` | Extension icons |
 
-> **Legacy files removed:** `note.html`, `note.js`, `voice.html`, `voice.js`, `timeline.html`, `timeline.js` — these are no longer used. All functionality is handled inline within `popup.html` / `popup.js`.
 
----
-
-## 🔧 Storage Schema
+## Storage Schema
 
 All data lives in `chrome.storage.local` (10MB limit). Key structure:
 
@@ -223,9 +218,9 @@ All data lives in `chrome.storage.local` (10MB limit). Key structure:
 }
 ```
 
----
 
-## 🛠️ Development Notes
+
+## Development Notes
 
 - No build step — plain HTML, CSS, vanilla JS.
 - To add a custom template: open DevTools console on the extension page and run:
@@ -239,8 +234,8 @@ All data lives in `chrome.storage.local` (10MB limit). Key structure:
 - To reset drag order: `chrome.storage.local.remove('customOrder')`
 - Fonts: `Syne` (brand, dark mode), `Space Mono` (mono labels, light mode brand), `DM Sans` (body)
 
----
 
-## 📄 License
+
+## License
 
 MIT — use it, fork it, ship it.
