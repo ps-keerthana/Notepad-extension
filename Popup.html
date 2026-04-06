@@ -59,7 +59,7 @@
         <option value="ideas">💡 Ideas</option>
       </select>
       <div class="fmt-toolbar" id="fmtToolbar">
-        <button class="fmt-btn" data-fmt="bold"   title="Bold (**text**)"><b>B</b></button>
+        <button class="fmt-btn" data-fmt="bold"   title="Bold (**text**)" ><b>B</b></button>
         <button class="fmt-btn" data-fmt="italic" title="Italic (*text*)"><i>I</i></button>
         <button class="fmt-btn" data-fmt="code"   title="Inline code (`text`)" style="font-size:10px">&#96;&#96;</button>
         <div class="fmt-sep"></div>
@@ -70,21 +70,39 @@
         <button class="fmt-btn" data-fmt="h1"     title="Heading 1 (# text)" style="font-size:10px">H1</button>
         <button class="fmt-btn" data-fmt="h2"     title="Heading 2 (## text)" style="font-size:10px">H2</button>
         <button class="fmt-btn" data-fmt="strike" title="Strikethrough (~~text~~)" style="text-decoration:line-through">S</button>
+        <div class="fmt-sep"></div>
+        <!-- Templates inline -->
+        <span class="template-label">T:</span>
+        <button class="tpl-btn" data-tpl="meeting">Mtg</button>
+        <button class="tpl-btn" data-tpl="bug">Bug</button>
+        <button class="tpl-btn" data-tpl="standup">Stnd</button>
+        <button class="tpl-btn" data-tpl="research">Res</button>
+        <button class="tpl-btn" data-tpl="todo">Todo</button>
+        <div class="fmt-sep"></div>
+        <!-- Color swatches inline -->
+        <button class="color-swatch" data-color=""      title="None"><span class="swatch-dot swatch-none"></span></button>
+        <button class="color-swatch" data-color="rose"  title="Rose"><span class="swatch-dot" style="background:#f87171"></span></button>
+        <button class="color-swatch" data-color="amber" title="Amber"><span class="swatch-dot" style="background:#fbbf24"></span></button>
+        <button class="color-swatch" data-color="teal"  title="Teal"><span class="swatch-dot" style="background:#2dd4bf"></span></button>
+        <button class="color-swatch" data-color="violet" title="Violet"><span class="swatch-dot" style="background:#a78bfa"></span></button>
+        <button class="color-swatch" data-color="sky"   title="Sky"><span class="swatch-dot" style="background:#38bdf8"></span></button>
       </div>
+
       <textarea id="noteInput" placeholder="Capture a thought... (Ctrl+Enter to save)"></textarea>
+
+      <!-- Save/Clear/Merge inside the box, bottom-center -->
+      <div class="input-action-bar">
+        <button id="saveBtn"  class="btn-save">Save_</button>
+        <button id="clearBtn" class="btn-ghost">Clear</button>
+        <button id="mergeBtn" class="btn-ghost btn-merge" title="Select 2+ notes then click to merge">
+          Merge <span id="mergeBadge" class="merge-badge hidden">0</span>
+        </button>
+      </div>
+
       <div id="tagsSection" class="tags hidden">
         <span id="autoTags"></span>
       </div>
     </div><!-- /input-wrap -->
-
-    <!-- SIDE CONTROLS -->
-    <div class="side-controls">
-      <button id="saveBtn"  class="btn-save">Save_</button>
-      <button id="clearBtn" class="btn-ghost">Clear</button>
-      <button id="mergeBtn" class="btn-ghost btn-merge" title="Select 2+ notes then click to merge">
-        Merge <span id="mergeBadge" class="merge-badge hidden">0</span>
-      </button>
-    </div>
 
     </div><!-- /input-row -->
 
