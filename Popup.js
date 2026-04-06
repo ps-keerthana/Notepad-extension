@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
       noteInput.value = msg.text || '';
       generateSmartTags();
       sendResponse({ ok: true });
-    } else if (msg.type === 'NOTE_UPDATED' || msg.type === 'NOTE_DELETED') {
+    } else if (msg.type === 'NOTE_UPDATED' || msg.type === 'NOTE_DELETED' || msg.type === 'NOTE_SAVED') {
       loadNotes();
       sendResponse({ ok: true });
     }
@@ -200,19 +200,13 @@ document.addEventListener('DOMContentLoaded', function () {
   noteInput.oninput = generateSmartTags;
   statsBtn.onclick  = () => statsPanel.classList.toggle('hidden');
 
-  timelineBtn.onclick = () => {
-    const t = document.body.classList.contains('light-mode') ? '?theme=light' : '';
-    chrome.windows.create({ url: chrome.runtime.getURL('timeline.html') + t, type: 'popup', width: 440, height: 440 });
-  };
+  timelineBtn.onclick = () => openPanel('panelTimeline', loadTimelinePanel);
 
   mergeBtn.onclick = handleMergeClicked;
   mergeConfirmBtn.onclick = handleMergeClicked;
   mergeClearBtn.onclick   = clearMergeSelection;
 
-  voiceBtn.onclick = () => {
-    const t = document.body.classList.contains('light-mode') ? '?theme=light' : '';
-    chrome.windows.create({ url: chrome.runtime.getURL('voice.html') + t, type: 'popup', width: 420, height: 340 });
-  };
+  voiceBtn.onclick = () => openPanel('panelVoice', initVoicePanel);
 
   searchInput.oninput = (e) => {
     searchQuery = e.target.value.toLowerCase().trim();
@@ -302,11 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function openNoteDetail(note) {
-    const t = document.body.classList.contains('light-mode') ? '&theme=light' : '';
-    chrome.windows.create({
-      url: chrome.runtime.getURL(`note.html?noteId=${note.id}${t}`),
-      type: 'popup', width: 440, height: 400
-    });
+    openPanel('panelNote', () => loadNotePanel(note));
   }
 
   // ── Undo toast ────────────────────────────────────────────────────────────
@@ -1071,3 +1061,312 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('mouseup',   onUp);
   });
 })();
+
+// ═══════════════════════════════════════════════════════════════════
+// INLINE PANEL SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+
+let activePanelId = null;
+let voiceRecognition = null;
+let currentDetailNoteId = null;
+
+// ── Panel open/close core ─────────────────────────────────────────
+
+function openPanel(panelId, initFn) {
+  // Close any currently open panel first
+  if (activePanelId && activePanelId !== panelId) {
+    closePanel(activePanelId, false);
+  }
+  // Toggle: if same panel is already open, close it
+  if (activePanelId === panelId) {
+    closePanel(panelId);
+    return;
+  }
+  const el = document.getElementById(panelId);
+  if (!el) return;
+  el.classList.remove('hidden');
+  el.classList.add('panel-open');
+  activePanelId = panelId;
+  // Highlight the button that opened this panel
+  syncActionBtns(panelId);
+  if (initFn) initFn();
+}
+
+function closePanel(panelId, clearActive = true) {
+  const el = document.getElementById(panelId);
+  if (!el) return;
+  el.classList.add('panel-closing');
+  setTimeout(() => {
+    el.classList.remove('panel-open', 'panel-closing');
+    el.classList.add('hidden');
+  }, 200);
+  if (clearActive) { activePanelId = null; syncActionBtns(null); }
+  // Stop voice if closing voice panel
+  if (panelId === 'panelVoice' && voiceRecognition) {
+    try { voiceRecognition.stop(); } catch (_) {}
+  }
+}
+
+// Wire up all close buttons
+document.querySelectorAll('.panel-close').forEach(btn => {
+  btn.addEventListener('click', () => closePanel(btn.dataset.panel));
+});
+
+// Highlight the active action button
+function syncActionBtns(openPanelId) {
+  const map = {
+    panelTimeline: 'timelineBtn',
+    panelVoice:    'voiceBtn',
+    panelNote:     null,
+  };
+  ['timelineBtn','voiceBtn','remindBtn','statsBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('act-btn-active');
+  });
+  if (openPanelId && map[openPanelId]) {
+    const el = document.getElementById(map[openPanelId]);
+    if (el) el.classList.add('act-btn-active');
+  }
+}
+
+// ── TIMELINE PANEL ────────────────────────────────────────────────
+
+function loadTimelinePanel() {
+  const dateLabel = document.getElementById('tlDateLabel');
+  const summary   = document.getElementById('tlSummary');
+  const list      = document.getElementById('tlList');
+
+  const today    = new Date();
+  const todayKey = today.toISOString().slice(0, 10);
+
+  dateLabel.textContent = today.toLocaleDateString(undefined, {
+    weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+  });
+
+  chrome.storage.local.get(['notes'], (res) => {
+    const allNotes = res.notes || [];
+    const todayNotes = allNotes.filter(n => {
+      const key = n.createdDate || (new Date(n.timestamp || Date.now())).toISOString().slice(0, 10);
+      return key === todayKey;
+    });
+
+    if (!todayNotes.length) {
+      list.innerHTML = '<div class="tl-empty">No notes captured today yet.</div>';
+      summary.textContent = '';
+      return;
+    }
+
+    todayNotes.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
+
+    // Group by domain
+    const sessions = new Map();
+    todayNotes.forEach(note => {
+      let domain = 'unknown source';
+      try { if (note.pageUrl) domain = new URL(note.pageUrl).hostname; } catch (_) {}
+      if (!sessions.has(domain)) sessions.set(domain, { title: note.pageTitle || domain, notes: [] });
+      sessions.get(domain).notes.push(note);
+    });
+
+    list.innerHTML = '';
+    let completedTasks = 0;
+
+    sessions.forEach((session, domain) => {
+      const grp = document.createElement('div');
+      grp.className = 'tl-group';
+
+      const hdr = document.createElement('div');
+      hdr.className = 'tl-group-header';
+      hdr.textContent = session.title + ' · ' + domain;
+      grp.appendChild(hdr);
+
+      session.notes.forEach(note => {
+        const row = document.createElement('div');
+        row.className = 'tl-row';
+
+        const time = document.createElement('div');
+        time.className = 'tl-time';
+        time.textContent = new Date(note.timestamp || Date.now())
+          .toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+        const text = document.createElement('div');
+        text.className = 'tl-text';
+        text.textContent = (note.text || '').replace(/\s+/g, ' ').slice(0, 120);
+
+        row.appendChild(time);
+        row.appendChild(text);
+        grp.appendChild(row);
+
+        const m = (note.text || '').match(/-\s\[x\]\s+/gi);
+        if (m) completedTasks += m.length;
+      });
+
+      list.appendChild(grp);
+    });
+
+    const sc = sessions.size, nc = todayNotes.length;
+    summary.textContent = `${sc} session${sc!==1?'s':''} · ${nc} note${nc!==1?'s':''} · ${completedTasks} done`;
+  });
+}
+
+// ── VOICE PANEL ───────────────────────────────────────────────────
+
+function initVoicePanel() {
+  const statusEl  = document.getElementById('voiceStatus');
+  const dot       = document.getElementById('voiceDot');
+  const textArea  = document.getElementById('voiceText');
+  const startBtn  = document.getElementById('voiceStartBtn');
+  const stopBtn   = document.getElementById('voiceStopBtn');
+  const useBtn    = document.getElementById('voiceUseBtn');
+
+  textArea.value = '';
+  statusEl.className = 'voice-status';
+  dot.className = 'voice-dot';
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    statusEl.textContent = 'Speech recognition not supported in this browser.';
+    startBtn.disabled = true;
+    return;
+  }
+
+  // Tear down previous instance if any
+  if (voiceRecognition) { try { voiceRecognition.abort(); } catch(_){} }
+  voiceRecognition = new SR();
+  voiceRecognition.lang = 'en-US';
+  voiceRecognition.interimResults = true;
+  voiceRecognition.continuous = true;
+
+  voiceRecognition.onstart = () => {
+    statusEl.innerHTML = '<span class="voice-dot listening"></span>Listening... speak now.';
+  };
+  voiceRecognition.onresult = (e) => {
+    let full = '';
+    for (let i = 0; i < e.results.length; i++) full += e.results[i][0].transcript + ' ';
+    textArea.value = full.trim();
+  };
+  voiceRecognition.onerror = (e) => {
+    statusEl.innerHTML = `<span class="voice-dot"></span>Error: ${e.error}`;
+  };
+  voiceRecognition.onend = () => {
+    statusEl.innerHTML = '<span class="voice-dot done"></span>Stopped — edit text or click Use.';
+  };
+
+  startBtn.onclick = () => { try { voiceRecognition.start(); } catch(_){} };
+  stopBtn.onclick  = () => { try { voiceRecognition.stop(); } catch(_){} };
+  useBtn.onclick   = () => {
+    const val = textArea.value.trim();
+    if (!val) return;
+    // Put recognized text into the main noteInput
+    const noteInput = document.getElementById('noteInput');
+    if (noteInput) {
+      noteInput.value = val;
+      // Trigger smart tag generation
+      noteInput.dispatchEvent(new Event('input'));
+    }
+    closePanel('panelVoice');
+  };
+}
+
+// ── NOTE DETAIL PANEL ─────────────────────────────────────────────
+
+const NOTE_FORMATS = {
+  bold:   { wrap: ['**','**'],  line: false, placeholder: 'bold text' },
+  italic: { wrap: ['*','*'],    line: false, placeholder: 'italic text' },
+  code:   { wrap: ['`','`'],    line: false, placeholder: 'code' },
+  strike: { wrap: ['~~','~~'],  line: false, placeholder: 'text' },
+  olist:  { wrap: null,         line: true,  placeholder: 'item' },
+  task:   { wrap: ['- [ ] ',''],line: true,  placeholder: 'task' },
+  bullet: { wrap: ['- ',''],    line: true,  placeholder: 'item' },
+  h1:     { wrap: ['# ',''],    line: true,  placeholder: 'Heading' },
+  h2:     { wrap: ['## ',''],   line: true,  placeholder: 'Heading' },
+};
+
+function applyNoteFormat(fmt, textarea) {
+  const cfg = NOTE_FORMATS[fmt];
+  if (!cfg) return;
+  const start = textarea.selectionStart, end = textarea.selectionEnd;
+  const val = textarea.value, sel = val.slice(start, end);
+
+  if (fmt === 'olist') {
+    const before = val.slice(0, start);
+    const lines = before.split('\n');
+    let nextNum = 1;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const m = lines[i].match(/^(\d+)\.\s/);
+      if (m) { nextNum = parseInt(m[1]) + 1; break; }
+      if (lines[i].trim()) break;
+    }
+    const ls = val.lastIndexOf('\n', start - 1) + 1;
+    const content = sel || cfg.placeholder;
+    const prefix = `${nextNum}. `;
+    textarea.value = val.slice(0, ls) + prefix + content + val.slice(end);
+    textarea.setSelectionRange(ls + prefix.length, ls + prefix.length + content.length);
+    return;
+  }
+  if (cfg.line) {
+    const ls = val.lastIndexOf('\n', start - 1) + 1;
+    const prefix = cfg.wrap[0], content = sel || cfg.placeholder;
+    textarea.value = val.slice(0, ls) + prefix + content + val.slice(end);
+    textarea.setSelectionRange(ls + prefix.length, ls + prefix.length + content.length);
+  } else {
+    const [open, close] = cfg.wrap, text = sel || cfg.placeholder;
+    textarea.value = val.slice(0, start) + open + text + close + val.slice(end);
+    textarea.setSelectionRange(start + open.length, start + open.length + text.length);
+  }
+}
+
+function loadNotePanel(note) {
+  currentDetailNoteId = note.id;
+
+  const originEl  = document.getElementById('noteDetailOrigin');
+  const tsEl      = document.getElementById('noteDetailTs');
+  const editArea  = document.getElementById('noteDetailEdit');
+  const saveBtn   = document.getElementById('noteDetailSave');
+  const deleteBtn = document.getElementById('noteDetailDelete');
+  const toolbar   = document.getElementById('noteDetailFmtToolbar');
+
+  originEl.textContent = note.pageTitle || '';
+  originEl.title       = note.pageUrl   || '';
+  originEl.onclick     = () => { if (note.pageUrl) chrome.tabs.create({ url: note.pageUrl }); };
+  tsEl.textContent     = note.timestamp || '';
+  editArea.value       = note.text      || '';
+  editArea.focus();
+
+  // Format toolbar
+  toolbar.addEventListener('mousedown', (e) => e.preventDefault());
+  toolbar.onclick = (e) => {
+    const btn = e.target.closest('[data-fmt]');
+    if (!btn) return;
+    applyNoteFormat(btn.dataset.fmt, editArea);
+    editArea.focus();
+  };
+
+  // Ctrl+Enter to save from note detail
+  editArea.onkeydown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); saveBtn.click(); }
+  };
+
+  saveBtn.onclick = () => {
+    const newText = editArea.value;
+    chrome.storage.local.get(['notes'], (res) => {
+      const notes = res.notes || [];
+      const idx = notes.findIndex(n => n.id === currentDetailNoteId);
+      if (idx === -1) return;
+      notes[idx].text = newText;
+      chrome.storage.local.set({ notes }, () => {
+        loadNotes();            // refresh list in background
+        closePanel('panelNote');
+      });
+    });
+  };
+
+  deleteBtn.onclick = () => {
+    chrome.storage.local.get(['notes'], (res) => {
+      const notes = (res.notes || []).filter(n => n.id !== currentDetailNoteId);
+      chrome.storage.local.set({ notes }, () => {
+        loadNotes();
+        closePanel('panelNote');
+      });
+    });
+  };
+}
