@@ -235,7 +235,6 @@ All data lives in `chrome.storage.local` (10MB limit). Key structure:
 - Fonts: `Syne` (brand, dark mode), `Space Mono` (mono labels, light mode brand), `DM Sans` (body)
 
 
-
 ## License
 
 MIT — use it, fork it, ship it.
