@@ -219,7 +219,6 @@ All data lives in `chrome.storage.local` (10MB limit). Key structure:
 ```
 
 
-
 ## Development Notes
 
 - No build step — plain HTML, CSS, vanilla JS.
